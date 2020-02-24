@@ -1,0 +1,97 @@
+spring:
+  profiles:
+    active: dev
+---
+spring:
+  profiles: dev
+  datasource:
+    database: question
+    host: 127.0.0.1
+    port: 3306
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: password
+  jpa:
+    show-sql: true
+security:
+  token:
+    header: X-Auth-Token
+    secret: ca$hc0w1!
+socketio:
+  port: 8091
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring.boot.admin.client.url: http://testh5.futuremap.com.cn:28226
+web:
+  url: https://testh5.futuremap.com.cn/windmill/dist/index.html
+maiservice:
+  url: http://172.18.54.226:5000
+jaiservice:
+  url: https://202.10.78.215:50000
+windmill:
+  stat:
+    url: http://localhost:8084/
+spring.servlet.multipart.max-file-size: 3MB
+spring.servlet.multipart.max-request-size: 5MB
+---
+spring:
+  profiles: test
+  datasource:
+    database: windmill-2
+    host: 127.0.0.1
+    port: 35001
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+    username: windmill
+    password: vRlKBQ9JnBkUs9Jb
+  data:
+    mongodb:
+      database: windmill
+      uri: mongodb://47.112.119.252:27017
+  jpa:
+    show-sql: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
+security:
+  token:
+    header: X-Auth-Token
+    secret: ca$hc0w1!
+socketio:
+  port: 8091
+mapper:
+  mappers: org.modelmapper.ModelMapper
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+spring.boot.admin.client.url: http://testh5.futuremap.com.cn:28226
+web:
+  url: https://test.futuremap.com.cn/windmill/dist/index.html
+maiservice:
+  url: http://172.18.54.226:5000
+jaiservice:
+  url: https://202.10.78.215:50000
+windmill:
+  stat:
+    url: http://localhost:8084/
+baiduai:
+  app_id: 16394358
+  api_key: pDgVXpNk4UIFSQGx6GukFg8D
+  secret_key: jEeg0VC14hhfNHnC3R3AtnnWg09qYtCA
+weixin:
+  mini:
+    appid: wx08d97847bb672b36
+    secret: 2022523da18714597f7843a88ec028b4
+  web:
+    appid: wxf1d1e54fc0c7c5df
+    secret: 855c324dafa70b4c2dd74f1ee557d981
+  public:
+    appid: wxb3aa91cba9e12773
+    secret: 12e179f03f28497c523d25804ba067d2
+    token: futuremaptest
+spring.servlet.multipart.max-file-size: 3MB
+spring.servlet.multipart.max-request-size: 5MB
