@@ -69,17 +69,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                         "/v2/api-docs",
                         "/",
                         "/csrf",
-                        "/webjars/**",
-                        "/users/newPassword",//忘记密码
-                        "/email/sendVerCode",//发送验证码修改密码
-                        "/actuator/**",
-                        "/instances",
-                        "/bf/**",
-                        "/wx/mini/login",//微信小程序登录
-                        "/wx/bind/account",//微信小程序绑定
-                        "/wx/decode",
-                        "/wx/callback",//微信网页扫码回调
-                        "/wx/public"
+                        "/webjars/**"
                 ).permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated();

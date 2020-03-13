@@ -23,4 +23,9 @@ public class TestController {
 		testService.tran();
 	}
 	
+	@GetMapping("/chrome") 
+	public void chrome() throws Exception{
+		testService.chrome();
+	}
+	
 }
