@@ -23,4 +23,14 @@ public class TestController {
 		testService.tran();
 	}
 	
+	
+	@GetMapping("/upc") 
+	public void upc() throws Exception{
+		testService.upc();
+	}
+	
+	@GetMapping("/chrome") 
+	public void chrome() throws Exception{
+		testService.chrome();
+	}
 }

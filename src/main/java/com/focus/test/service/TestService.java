@@ -1,12 +1,18 @@
 package com.focus.test.service;
 
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.focus.test.entity.Test;
-import com.focus.test.exception.BadRequestException;
 import com.focus.test.repository.TestRepository;
 
 @Service
@@ -41,4 +47,69 @@ public class TestService {
 		testRepository.save(test);
 	}
 
+	public void upc() {
+		//7423738132516
+		Long start = 8934935222284L;
+		
+		for(Long i=8934935222284L;i<8934935224284L;) {
+			int j = (int)(10+Math.random()*(20+1));
+            
+			start = start + j;
+			i = start;
+			System.out.println(start.toString());
+		}
+		
+		
+		
+	}
+	/**
+	 * 
+	 */
+	public void chrome() {
+		System.setProperty("webdriver.chrome.driver","C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
+		
+		WebDriver webDriver =new ChromeDriver();
+
+		System.out.println("打开浏览器--------------------------------------------------------------------------------------------------------------");
+
+		webDriver.manage().window().maximize();
+
+		System.out.println("页面最大化--------------------------------------------------------------------------------------------------------------");
+		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+		//设定网址
+
+		webDriver.get("https://sso.qiniu.com/");
+
+		//显示等待控制对象
+		WebDriverWait webDriverWait=new WebDriverWait(webDriver,5);
+		
+		//另外一种获取元素方法
+
+		WebElement e= webDriver.findElement(By.id("email"));
+
+		e.clear();
+
+		System.out.println("清空密码框内容----------------------------------------------------------------------------------------------------------");
+
+		e.sendKeys("james@futuremap.com.cn");
+		
+		WebElement e1= webDriver.findElement(By.id("password"));
+
+		e1.clear();
+
+		System.out.println("清空密码框内容----------------------------------------------------------------------------------------------------------");
+
+		e1.sendKeys("fm180417");
+		
+		WebElement log= webDriver.findElement(By.id("login-button"));
+
+        log.click();
+
+	}
+	
+	public static void main(String [] args) {
+		TestService testService = new TestService();
+		testService.chrome();
+	}
 }
