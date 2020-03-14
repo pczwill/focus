@@ -9,7 +9,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.focus.test.entity.Test;
@@ -47,21 +46,6 @@ public class TestService {
 		testRepository.save(test);
 	}
 
-	public void upc() {
-		//7423738132516
-		Long start = 8934935222284L;
-		
-		for(Long i=8934935222284L;i<8934935224284L;) {
-			int j = (int)(10+Math.random()*(20+1));
-            
-			start = start + j;
-			i = start;
-			System.out.println(start.toString());
-		}
-		
-		
-		
-	}
 	/**
 	 * 
 	 */
@@ -112,4 +96,5 @@ public class TestService {
 		TestService testService = new TestService();
 		testService.chrome();
 	}
+
 }
