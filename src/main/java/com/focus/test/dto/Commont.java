@@ -3,7 +3,7 @@ package com.focus.test.dto;
 public class Commont {
 	
 	private String time;
-	private int level;
+	private String level;
 	private String attribute;
 	private String authorName;
 	private String reviewTitle;
@@ -15,10 +15,10 @@ public class Commont {
 	public void setTime(String time) {
 		this.time = time;
 	}
-	public int getLevel() {
+	public String getLevel() {
 		return level;
 	}
-	public void setLevel(int level) {
+	public void setLevel(String level) {
 		this.level = level;
 	}
 	public String getAttribute() {

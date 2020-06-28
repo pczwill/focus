@@ -163,7 +163,7 @@ public class amazon {
 		// 第一行 星级信息
 		Element row1 = (Element) rows.get(0);
 		int starLevel = getStart(row1);
-		reviewInfo.setLevel(starLevel);
+		reviewInfo.setLevel("");
 		// 第一行 评价标题 评价链接
 		Element url = (Element) row1.select(".a-size-base").get(0);
 		String urlStr = url.attr("href");
@@ -219,7 +219,7 @@ public class amazon {
 		// 第二行 星级信息
 		Element row2 = (Element) rows.get(1);
 		int starLevel = getStart(row2);
-		reviewInfo.setLevel(starLevel);
+		reviewInfo.setLevel("");
 		// 第二行 评价标题 评价链接
 		Element url = (Element) row2.select(".a-size-base").get(0);
 		//123 String urlStr = url.attr("href");

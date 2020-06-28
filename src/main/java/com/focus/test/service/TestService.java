@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,17 +16,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.alibaba.fastjson.JSON;
 import com.focus.test.dto.Commont;
+import com.focus.test.entity.HotTitle;
 import com.focus.test.entity.Test;
+import com.focus.test.repository.HotTitleRepository;
 import com.focus.test.repository.TestRepository;
 import com.focus.test.util.ExcelUtil;
 
@@ -45,12 +49,12 @@ public class TestService {
 		headerList.add("reviewUrl");
 		headerList.add("reviewContent");
 		headerNameList.add("时间");
-		headerNameList.add("星级");
-		headerNameList.add("属性");
-		headerNameList.add("作者");
-		headerNameList.add("评论标题");
+		headerNameList.add("概念名称");
+		headerNameList.add("股票名称");
+		headerNameList.add("股票代码");
+		headerNameList.add("驱动事件");
 		headerNameList.add("评论URL");
-		headerNameList.add("评论内容");
+		headerNameList.add("成分股数量");
 	}
 	/*
 	 * 大概意思：在默认的代理模式下，只有目标方法由外部调用，
@@ -64,6 +68,9 @@ public class TestService {
 	
 	@Autowired
 	TestRepository testRepository;
+	
+	@Autowired
+	HotTitleRepository hotTitleRepository;
 
 	//@Transactional(rollbackFor = Exception.class)
 	@Transactional
@@ -140,7 +147,7 @@ public class TestService {
 					// 星级
 					WebElement star = e.findElement(By.className("a-link-normal"));
 					System.out.println("star: " + star.getAttribute("title"));
-					commont.setLevel(Integer.valueOf(star.getAttribute("title").substring(0, 1)));
+					commont.setLevel(star.getAttribute("title").substring(0, 1));
 
 					// 多属性
 					WebElement attr = null;
@@ -299,7 +306,7 @@ public class TestService {
 					Commont commont = new Commont();
 					String asin = e.getAttribute("data-asin");
 					commont.setReviewTitle(asin);
-					commont.setLevel(Integer.valueOf(str));
+					commont.setLevel(str);
 					try {
 						List<WebElement> star = e.findElements(By.className("a-spacing-top-micro"));
                         if(star.size()>1) {
@@ -354,6 +361,164 @@ public class TestService {
 
 		webDriver.close();
 
+	}
+	
+	public void getCompany(WebDriver webDriver, String home, String url, HotTitle pHotTitle) throws InterruptedException {
+		
+		/*String selectLinkOpeninNewTab = Keys.chord(Keys.CONTROL,Keys.RETURN); 
+		webDriver.findElement(By.linkText("urlLink")).sendKeys(selectLinkOpeninNewTab);
+		webDriver.get(url);*/
+		((ChromeDriver)webDriver).executeScript("window.open('"+url+"')", "");
+		Thread.sleep(1000 * 5);
+		Set<String> handle = webDriver.getWindowHandles();
+		// 获取所有页面的句柄，并循环判断不是当前的句柄
+		for (String handles : handle) {
+			if (handles.equals(home)) {
+				continue;
+			}else {
+				//打开新窗口
+				webDriver.switchTo().window(handles);
+				Integer pageSize = 0;
+				try {
+					WebElement pageInfoT = webDriver.findElement(By.className("page_info"));
+					String pageInfoString = pageInfoT.getText();
+					String [] pageArray = pageInfoString.split("\\/");
+					pageSize = Integer.valueOf(pageArray[1]) -1;
+				}catch(Exception e1) {
+					pageSize = 1;
+				}
+				List<HotTitle> hotTitles = new ArrayList<>();
+				for (int index = 0; index < pageSize; index++) {
+					WebElement products = webDriver.findElement(By.className("m-pager-table"));
+					WebElement tbody = products.findElement(By.tagName("tbody"));
+					List<WebElement> tr = tbody.findElements(By.tagName("tr"));
+					for (int i = 0; i < tr.size(); i++) {
+						List<WebElement> td = tr.get(i).findElements(By.tagName("td"));
+						log.info("title" + webDriver.getTitle());
+						log.info("公司");
+						log.info(td.get(1).getText());
+						log.info(td.get(2).getText());
+						
+						HotTitle hotTitle = new HotTitle();
+						hotTitle.setCode(td.get(1).getText());
+						hotTitle.setParentId(pHotTitle.getId());
+						hotTitle.setDisplayName(td.get(2).getText());
+						hotTitles.add(hotTitle);
+						//当前页
+					}
+					if(hotTitles.size() >= 100) {
+						break;
+					}
+					List<WebElement> nexts = webDriver.findElements(By.className("changePage"));
+					if(nexts != null && !nexts.isEmpty()) {
+						nexts.forEach(e->{
+							if(e.getText().equals("下一页")) {
+								e.click();
+							}
+						});
+					}
+					Thread.sleep(1000 * 10);
+				}
+				webDriver.switchTo().window(handles).close();
+				
+				hotTitleRepository.saveAll(hotTitles);
+			}
+		}
+		
+		
+		
+		
+	}
+
+	public void hot(HttpServletResponse response) {
+
+
+		System.setProperty("webdriver.chrome.driver",
+				"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
+
+		WebDriver webDriver = new ChromeDriver();
+
+		System.out.println(
+				"打开浏览器--------------------------------------------------------------------------------------------------------------");
+
+		webDriver.manage().window().maximize();
+
+		System.out.println(
+				"页面最大化--------------------------------------------------------------------------------------------------------------");
+		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+		// 设定网址
+		String base = "http://q.10jqka.com.cn/gn/";
+
+		webDriver.get(base);
+
+		// 显示等待控制对象
+		WebDriverWait webDriverWait = new WebDriverWait(webDriver, 10);
+		
+
+		try {
+			List<Commont> comments = new ArrayList<>();
+			
+			for (int index = 0; index < 28; index++) {
+				WebElement products = webDriver.findElement(By.className("m-pager-table"));
+				WebElement tbody = products.findElement(By.tagName("tbody"));
+				List<WebElement> tr = tbody.findElements(By.tagName("tr"));
+				for (int i = 0; i < tr.size(); i++) {
+					List<WebElement> td = tr.get(i).findElements(By.tagName("td"));
+					String url = td.get(1).findElement(By.tagName("a")).getAttribute("href");
+					log.info("分类");
+					log.info(td.get(0).getText());
+					log.info(td.get(1).getText());
+					log.info(url);
+					log.info(td.get(2).getText());
+					log.info(td.get(3).getText());
+					log.info(td.get(4).getText());
+					/*
+					 * Commont commont = new Commont(); commont.setAttribute("");
+					 * commont.setLevel(td.get(1).getText()); commont.setReviewUrl(url);
+					 * commont.setReviewContent(td.get(4).getText());
+					 * commont.setTime(td.get(0).getText());
+					 * commont.setReviewTitle(td.get(2).getText()); comments.add(commont);
+					 */
+					if(hotTitleRepository.countByTitle(td.get(1).getText()) == 0) {
+						HotTitle hotTitle = new HotTitle();
+						hotTitle.setTime(td.get(0).getText());
+						hotTitle.setTitle(td.get(1).getText());
+						hotTitle.setEvent(td.get(2).getText());
+						hotTitle.setCompanyCount(td.get(4).getText());
+						hotTitle = hotTitleRepository.save(hotTitle);
+						//当前页
+						String home = webDriver.getWindowHandle();
+						getCompany(webDriver, home, url, hotTitle);
+						webDriver.switchTo().window(home);
+					}
+					
+				}
+				try {
+					List<WebElement> next = webDriver.findElements(By.className("changePage"));
+					WebElement nextElement = next.get(next.size() - 2);
+					nextElement.click();
+					Thread.sleep(1000 * 10);
+				}catch (Exception ex) {
+					// TODO: handle exception
+				}
+			}
+			log.info(JSON.toJSONString(comments));
+
+			/*
+			 * ExcelUtil exUtil = new ExcelUtil(); try { exUtil.exportExcel("热门概念",
+			 * headerNameList, headerList, comments, response); } catch (Exception e) {
+			 * log.error("", e); }
+			 * 
+			 * exUtil.exportExcel("热门概念", headerNameList, headerList, comments);
+			 */
+		} catch (Exception ee) {
+			log.info("错误", ee);
+			//webDriver.close();
+		}
+
+		//webDriver.close();
+			
 	}
 	
 

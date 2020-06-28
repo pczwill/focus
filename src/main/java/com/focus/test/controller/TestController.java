@@ -52,4 +52,14 @@ public class TestController {
 		
 	}
 	
+	@GetMapping("/hot") 
+	public void hot(HttpServletResponse response) throws Exception {
+		try {
+			testService.hot(response);
+		}catch(Exception e) {
+			throw new Exception("失败");
+		}
+		
+	}
+	
 }

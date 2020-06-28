@@ -60,19 +60,5 @@ public class WebConfiguration implements WebMvcConfigurer {
         return objectMapper;
     }
 
-    @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(new ApiInfoBuilder()
-                        .title("未来地图问卷API")
-                        .description("未来地图问卷API，仅作Demo用途")
-                        .contact(new Contact("developer", "", "developer@futuremap.com"))
-                        .version("1.0")
-                        .build()
-                )
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.futuremap.question.controller"))
-                .paths(PathSelectors.any())
-                .build();
-    }
+   
 }
