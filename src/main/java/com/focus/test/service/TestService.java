@@ -520,6 +520,111 @@ public class TestService {
 		//webDriver.close();
 			
 	}
+
+	public void chromeUs(String commentUrl, HttpServletResponse response) {
+
+		System.setProperty("webdriver.chrome.driver","C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
+		
+		WebDriver webDriver =new ChromeDriver();
+
+		System.out.println("打开浏览器--------------------------------------------------------------------------------------------------------------");
+
+		webDriver.manage().window().maximize();
+
+		System.out.println("页面最大化--------------------------------------------------------------------------------------------------------------");
+		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+		//设定网址
+        String base = "https://www.amazon.com/product-reviews/%s/ref=cm_cr_arp_d_viewopt_srt?ie=UTF8&reviewerType=all_reviews&filterByStar=five_star&pageNumber=1&sortBy=recent";
+		
+		
+		webDriver.get(String.format(base, commentUrl));
+
+		//显示等待控制对象
+		WebDriverWait webDriverWait=new WebDriverWait(webDriver,10);
+		try {
+			List<Commont> comments = new ArrayList<>();
+			
+			for (int i = 0; i < 100; i++) {
+				
+				List<WebElement> reviews = webDriver.findElements(By.className("review"));
+				reviews.forEach(e -> {
+					Commont commont = new Commont();
+					WebElement user = e.findElement(By.className("a-profile-name"));
+					// 用户
+					commont.setAuthorName(user.getText());
+					System.out.println("author: " + commont.getAuthorName());
+					// 标题
+					WebElement title = e.findElement(By.className("review-title"));
+					commont.setReviewTitle(title.findElement(By.tagName("span")).getText());
+					System.out.println("title: " + commont.getReviewTitle());
+					// 内容
+					WebElement content = e.findElement(By.className("review-text"));
+					commont.setReviewContent(content.findElement(By.tagName("span")).getText());
+					System.out.println("content: " + commont.getReviewContent());
+					// 星级
+					WebElement star = e.findElement(By.className("a-link-normal"));
+					System.out.println("star: " + star.getAttribute("title"));
+					commont.setLevel(star.getAttribute("title").substring(0, 1));
+
+					// 多属性
+					WebElement attr = null;
+					try {
+						attr = e.findElement(By.className("review-data"));
+						commont.setAttribute(attr.findElement(By.tagName("a")).getText().replaceAll("サイズ: ", ""));
+						System.out.println("attr: " + commont.getAttribute());
+						String url = attr.findElement(By.tagName("a")).getAttribute("href");
+						int start = url.indexOf("product-reviews") + 16;
+						int end = start + 9;
+						url = url.substring(start, end);
+						commont.setReviewUrl(url);
+					}catch(Exception e1) {
+						commont.setReviewUrl(commentUrl);
+					}
+					// 时间
+					WebElement date = e.findElement(By.className("review-date"));
+					String dateStr = date.getText();
+					commont.setTime(dateStr.substring(0, dateStr.indexOf("日") + 1));
+					comments.add(commont);
+				});
+				if(reviews == null || reviews.size() != 10) {
+					break;
+				}
+				WebElement next = null;
+				try {
+					next = webDriver.findElement(By.className("a-last"));
+				}catch(Exception e) {
+					break;
+				}
+				
+				String classs = next.getAttribute("class");
+				System.out.println("classs" + classs);
+
+				if(classs.contains("a-disabled")) {
+					break;
+				}else {
+					next.click();
+					Thread.sleep(1000*5);
+				}
+			}
+		
+			ExcelUtil exUtil = new ExcelUtil();
+			try {
+				exUtil.exportExcel(commentUrl, headerNameList, headerList, comments, response);
+			}catch(Exception e) {
+				//break;
+			}
+			
+			exUtil.exportExcel(commentUrl, headerNameList, headerList, comments);
+		}catch(Exception ee) {
+			webDriver.close();
+		} 
+		
+		webDriver.close();
+		
+	
+		
+	}
 	
 
 }

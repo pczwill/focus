@@ -42,6 +42,18 @@ public class TestController {
 		
 	}
 	
+	
+	@GetMapping("us/comment") 
+	public void chromeUs(@RequestParam("code") String code, HttpServletResponse response) throws Exception {
+		try {
+			testService.chromeUs(code, response);
+		}catch(Exception e) {
+			throw new Exception("失败");
+		}
+		
+	}
+	
+	
 	@GetMapping("/search") 
 	public void search(@RequestParam("code") String code, HttpServletResponse response) throws Exception {
 		try {
