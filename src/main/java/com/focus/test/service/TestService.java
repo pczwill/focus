@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
+import com.focus.test.dto.ComDto;
 import com.focus.test.dto.Commont;
 import com.focus.test.entity.HotTitle;
 import com.focus.test.entity.Test;
@@ -268,10 +269,33 @@ public class TestService {
         }
     }
 
-	public void search(String code, HttpServletResponse response) {
+    /*
+     * static List<String> headerList = new ArrayList<String>();
+	static List<String> headerNameList = new ArrayList<String>();
+	static {
+		headerList.add("time");
+		headerList.add("level");
+		headerList.add("attribute");
+		headerList.add("authorName");
+		headerList.add("reviewTitle");
+		headerList.add("reviewUrl");
+		headerList.add("reviewContent");
+		headerNameList.add("时间");
+		headerNameList.add("概念名称");
+		headerNameList.add("股票名称");
+		headerNameList.add("股票代码");
+		headerNameList.add("驱动事件");
+		headerNameList.add("评论URL");
+		headerNameList.add("成分股数量");
+	}
+     * 
+     * */
+	public void search(String code, HttpServletResponse response, String base) {
 
-		System.setProperty("webdriver.chrome.driver",
-				"C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\Application\\chromedriver.exe");
+		//System.setProperty("webdriver.chrome.driver","C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\Application\\chromedriver.exe");
+		//mac
+		System.setProperty("webdriver.chrome.driver","/usr/local/bin/chromedriver");
+		
 
 		WebDriver webDriver = new ChromeDriver();
 
@@ -285,54 +309,95 @@ public class TestService {
 		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
 		// 设定网址
-		String base = "https://www.amazon.co.jp/s/ref=nb_sb_noss_2?__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&url=search-alias%3Daps&field-keywords=";
-
+		//String base = "https://www.amazon.co.jp/s?k=%E9%9B%BB%E5%8B%95%E3%82%AA%E3%83%8A%E3%83%9B%E3%83%BC%E3%83%AB&i=hpc&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&ref=nb_sb_noss_2";
+		//String base = "https://www.amazon.co.jp/s?k=%E3%82%AA%E3%83%8A%E3%83%9B&i=hpc&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&ref=nb_sb_noss";
+		
+		
 		webDriver.get(base + code);
 
 		// 显示等待控制对象
 		WebDriverWait webDriverWait = new WebDriverWait(webDriver, 10);
-
-		WebElement products = webDriver.findElement(By.className("s-search-results"));
-
+		
 		try {
-			List<Commont> comments = new ArrayList<>();
+			WebElement cli = webDriver.findElement(By.id("a-autoid-2"));
+			if(cli != null) {
+				cli.click();
+			}
+		}catch(Exception e) {
+		   //log.info(“无确认”);	
+		}
+		
+		
 
-			for (int i = 0; i < 4; i++) {
+		WebElement products = webDriver.findElement(By.className("s-main-slot"));
+        int[] index = {1};
+		try {
+			List<ComDto> comments = new ArrayList<>();
+			for (int i = 0; i < 50; i++) {
                 
 				List<WebElement> reviews = products.findElements(By.className("sg-col-4-of-24"));
 				String str = (i+1)+"";
 				System.out.print("第"+str+"页");
 				reviews.forEach(e -> {
-					Commont commont = new Commont();
+					ComDto commont = new ComDto();
 					String asin = e.getAttribute("data-asin");
-					commont.setReviewTitle(asin);
-					commont.setLevel(str);
+					commont.setOne(str);
+					commont.setTwo(asin);
 					try {
-						List<WebElement> star = e.findElements(By.className("a-spacing-top-micro"));
-                        if(star.size()>1) {
-                        	//WebElement spans = star.findElement(By.className("a-size-small"));
-    						WebElement pans = star.get(0).findElement(By.className("a-size-base"));
-    						if(pans != null) {
-    							//WebElement countEle = pans.get(1);
-        						//String count = countEle.getAttribute("aria-label");
-        						commont.setAuthorName(pans.getText());
-    						}
-    						
-                        } 
+						List<WebElement> small = e.findElements(By.className("a-spacing-top-small"));
 						
+						//第一标题
+						WebElement title = small.get(0).findElement(By.tagName("span"));
+						commont.setThree(title.getText());
+						commont.setSeven(index[0]+"");
+						index[0] = index[0] + 1;
+						//价钱
+						WebElement price = null;
+						try {
+							price = small.get(1).findElement(By.className("a-price-whole"));
+						}catch(Exception ee) {
+							log.info("无存");
+							throw new Exception("无存" +  ee.getMessage());
+						} 
+						
+						String priceStr = price.getText();
+						priceStr = priceStr.replaceAll("￥", "");
+						priceStr = priceStr.replaceAll(",", "");
+						commont.setFour(priceStr);
+						List<WebElement> micro = e.findElements(By.className("a-spacing-top-micro"));
+						//如果 有两个表示有平
+					    //第二平
+						if (micro.size() > 1) {
+							WebElement ping = micro.get(0).findElement(By.className("a-size-small"));
+							
+							List<WebElement> pings = ping.findElements(By.xpath(".//span[@aria-label]"));
+							//平分
+							String startString = pings.get(0).getAttribute("aria-label");
+							startString = startString.substring(startString.length()-3);
+							commont.setFive(startString);
+                            //数量
+							commont.setSix(pings.get(1).getAttribute("aria-label"));
+						} 
 					} catch (Exception ce) {
 						log.info("无评价", ce);
 					}
 					comments.add(commont);
 				});
-				if (reviews == null || reviews.size() != 48) {
-					break;
-				}
+				//if (reviews == null) {
+					// if (reviews == null || reviews.size() != 24) {
+					//break;
+				//}
 				WebElement next = null;
 				try {
 					next = webDriver.findElement(By.className("a-last"));
 				} catch (Exception e) {
-					break;
+					Thread.sleep(1000 * 5);
+					try {
+						next = webDriver.findElement(By.className("a-last"));
+					}catch(Exception es) {
+						break;
+					}
+					
 				}
 
 				String classs = next.getAttribute("class");
@@ -342,11 +407,29 @@ public class TestService {
 					break;
 				} else {
 					next.click();
-					Thread.sleep(1000 * 5);
+					Thread.sleep(1000 * 10);
 				}
 			}
 
 			ExcelUtil exUtil = new ExcelUtil();
+			List<String> headerList = new ArrayList<String>();
+			List<String> headerNameList = new ArrayList<String>();
+
+			headerList.add("one");
+			headerList.add("two");
+			headerList.add("three");
+			headerList.add("four");
+			headerList.add("five");
+			headerList.add("six");
+			headerList.add("seven");
+			headerNameList.add("页码");
+			headerNameList.add("ASIN");
+			headerNameList.add("标题");
+			headerNameList.add("价钱");
+			headerNameList.add("评价星级");
+			headerNameList.add("评价数量");
+			headerNameList.add("顺序");
+			
 			try {
 				exUtil.exportExcel(code, headerNameList, headerList, comments, response);
 			} catch (Exception e) {
@@ -523,7 +606,10 @@ public class TestService {
 
 	public void chromeUs(String commentUrl, HttpServletResponse response) {
 
-		System.setProperty("webdriver.chrome.driver","C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
+		//windows
+		//System.setProperty("webdriver.chrome.driver","C:\\Program Files (x86)\\Google\\Chrome\\Application\\chromedriver.exe");
+		//mac
+		System.setProperty("webdriver.chrome.driver","/usr/local/bin/chromedriver");
 		
 		WebDriver webDriver =new ChromeDriver();
 
@@ -604,7 +690,7 @@ public class TestService {
 					break;
 				}else {
 					next.click();
-					Thread.sleep(1000*5);
+					Thread.sleep(1000*6);
 				}
 			}
 		

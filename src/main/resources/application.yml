@@ -5,12 +5,12 @@ spring:
 spring:
   profiles: dev
   datasource:
-    database: question
-    host: 127.0.0.1
+    database: focus
+    host: 139.9.114.51
     port: 3306
     url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
     username: root
-    password: password
+    password: root
   jpa:
     show-sql: true
 security:
