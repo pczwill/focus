@@ -70,7 +70,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                         "/",
                         "/csrf",
                         "/webjars/**",
-                        "/test/**"
+                        "/test/**",
+                        "/ca/**"
                 ).permitAll()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated();

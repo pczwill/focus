@@ -53,5 +53,10 @@ public class Node {
     
     @ApiModelProperty("案例公司名称")
     private String nine;
+    
+    @ApiModelProperty("案例公司名称")
+    private String ten;
+    @ApiModelProperty("案例公司名称")
+    private String eleven;
 
 }
